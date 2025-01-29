@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script> <!-- Added this -->
 </head>
 <body>
     <h2>MediaPipe Pose Detection</h2>
@@ -44,14 +45,19 @@
             canvasElement.height = videoElement.videoHeight;
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-            
+
             if (results.poseLandmarks) {
+            
                 for (let landmark of results.poseLandmarks) {
                     canvasCtx.beginPath();
                     canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 5, 0, 2 * Math.PI);
                     canvasCtx.fillStyle = 'red';
                     canvasCtx.fill();
                 }
+
+               
+                window.drawLandmarks(canvasCtx, results.poseLandmarks, window.POSE_CONNECTIONS, 
+                                     { color: 'lime', lineWidth: 2 });
             }
         }
         
