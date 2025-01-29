@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaPipe Pose Detection</title>
+    <title>Pose Detection</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script> <!-- Added this -->
 </head>
 <body>
-    <h2>MediaPipe Pose Detection</h2>
+    <h2>Pose Detection</h2>
     <video id="video" autoplay playsinline></video>
     <canvas id="output"></canvas>
 
@@ -40,26 +40,45 @@
             detectPose();
         }
         
-        function drawResults(results) {
-            canvasElement.width = videoElement.videoWidth;
-            canvasElement.height = videoElement.videoHeight;
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+function drawResults(results) {
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 
-            if (results.poseLandmarks) {
-            
-                for (let landmark of results.poseLandmarks) {
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 5, 0, 2 * Math.PI);
-                    canvasCtx.fillStyle = 'red';
-                    canvasCtx.fill();
-                }
+    if (results.poseLandmarks) {
+        // Draw landmarks (dots)
+        for (let landmark of results.poseLandmarks) {
+            canvasCtx.beginPath();
+            canvasCtx.arc(landmark.x * canvasElement.width, landmark.y * canvasElement.height, 5, 0, 2 * Math.PI);
+            canvasCtx.fillStyle = 'red';
+            canvasCtx.fill();
+        }
 
-               
-                window.drawLandmarks(canvasCtx, results.poseLandmarks, window.POSE_CONNECTIONS, 
-                                     { color: 'lime', lineWidth: 2 });
+        const POSE_CONNECTIONS = [
+            [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8],
+            [9, 10], [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+            [11, 23], [12, 24], [23, 24], [23, 25], [24, 26], [25, 27],
+            [26, 28], [27, 29], [28, 30], [29, 31], [30, 32]
+        ];
+
+        // Draw pose connections (lines)
+        for (let [start, end] of POSE_CONNECTIONS) {
+            const startLandmark = results.poseLandmarks[start];
+            const endLandmark = results.poseLandmarks[end];
+
+            if (startLandmark && endLandmark) {
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(startLandmark.x * canvasElement.width, startLandmark.y * canvasElement.height);
+                canvasCtx.lineTo(endLandmark.x * canvasElement.width, endLandmark.y * canvasElement.height);
+                canvasCtx.strokeStyle = 'lime';
+                canvasCtx.lineWidth = 2;
+                canvasCtx.stroke();
             }
         }
+    }
+}
+
         
         setupCamera().then(loadPoseModel);
     </script>
